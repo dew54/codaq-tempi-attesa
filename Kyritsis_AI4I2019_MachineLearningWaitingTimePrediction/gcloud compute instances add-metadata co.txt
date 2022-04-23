@@ -1,0 +1,38 @@
+gcloud compute instances add-metadata codaq-test --metadata shutdown-script="#!/bin/bash gcloud sql instances patch codaqdb2 --activation-policy=NEVER"
+
+
+
+gcloud compute instances update codaq-test --metadata shutdown-script="#! /bin/bash
+> gcloud sql instances patch codaqdb2 --activation-policy=NEVER"
+
+
+
+
+gcloud compute instances add-metadata codaq-test --metadata-from-file startup-script="shutdown-script/shut-down-db.sh"
+
+
+
+
+#! /bin/bash 
+gcloud sql instances patch codaqdb2 --activation-policy=NEVER'
+
+
+
+/home/dvdvdm96_gmail_com/shutdown-script/shut-down-db.sh
+
+
+
+gcloud compute instances add-metadata VM_NAME \
+  --metadata-from-file startup-script=FILE_PATH
+
+
+
+"#!/bin/bash
+gcloud sql instances patch codaqdb2 --activation-policy=NEVER"
+
+
+
+gcloud compute instances add-metadata codaq-test --metadata-from-file startup-script="shutdown.sh"
+
+
+sudo apt-get install php7.4-zip php7.4-curl

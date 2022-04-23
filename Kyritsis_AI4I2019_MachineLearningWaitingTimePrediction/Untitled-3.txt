@@ -1,0 +1,125 @@
+<?php
+/**
+ * The base configuration for WordPress
+ *
+ * The wp-config.php creation script uses this file during the
+ * installation. You don't have to use the web site, you can
+ * copy this file to "wp-config.php" and fill in the values.
+ *
+ * This file contains the following configurations:
+ *
+ * * MySQL settings
+ * * Secret keys
+ * * Database table prefix
+ * * ABSPATH
+ *
+ * @link https://codex.wordpress.org/Editing_wp-config.php
+ *
+ * @package WordPress
+ */
+
+// Register GCS stream wrapper
+
+require_once(__DIR__ . '/../vendor/autoload.php');
+$storageClient = new Google\Cloud\Storage\StorageClient();
+$storageClient->registerStreamWrapper();
+
+// $onGae is true on production.
+$onGae = (getenv('GAE_VERSION') !== false);
+
+// Disable pseudo cron behavior
+define('DISABLE_WP_CRON', true);
+
+// Determine HTTP or HTTPS, then set WP_SITEURL and WP_HOME
+if (isset($_SERVER['HTTP_HOST'])) {
+    define('HTTP_HOST', $_SERVER['HTTP_HOST']);
+} else {
+    define('HTTP_HOST', 'localhost');
+}
+// Use https on production.
+define('WP_HOME', $onGae ? 'https://' . HTTP_HOST : 'http://' . HTTP_HOST);
+define('WP_SITEURL', $onGae ? 'https://' . HTTP_HOST : 'http://' . HTTP_HOST);
+
+// Force SSL for admin pages
+define('FORCE_SSL_ADMIN', $onGae);
+
+// ** MySQL settings - You can get this info from your web host ** //
+if ($onGae) {
+    /** Production environment */
+    define('DB_HOST', ':/cloudsql/codaq-environment:us-central1:codaqdb');
+    /** The name of the database for WordPress */
+    define('DB_NAME', 'website-codaq');
+    /** MySQL database username */
+    define('DB_USER', 'tutorial-root');
+    /** MySQL database password */
+    define('DB_PASSWORD', 'codaq222');
+} else {
+    /** Local environment */
+    define('DB_HOST', '127.0.0.1');
+    /** The name of the database for WordPress */
+    define('DB_NAME', 'website-codaq');
+    /** MySQL database username */
+    define('DB_USER', 'tutorial-root');
+    /** MySQL database password */
+    define('DB_PASSWORD', 'codaq222');
+}
+
+/** Database Charset to use in creating database tables. */
+define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
+define('DB_COLLATE', '');
+
+/**#@+
+ * Authentication Unique Keys and Salts.
+ *
+ * Change these to different unique phrases!
+ * You can generate these using the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}
+ * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.
+ *
+ * @since 2.6.0
+ */
+*/
+
+define('AUTH_KEY',         'vzKJZuGupi6fMPBJMnEYnt+RoR26j8ftZw26hO0m78lYGXoZdnZ2Anl/lPDjpa3z1u1ob6jwcUgXqg0H');
+define('SECURE_AUTH_KEY',  'acN+MVLRp97DYXVJms+Ngf1+Hect2c/4quJ6u0VJbqO+zCFdsetDNdMVVf+sb2aoTQMLGRcSQL8LRcZI');
+define('LOGGED_IN_KEY',    'mkpfM98pUVSxDCKHgZLOqAPxgyq5x0vAWjooj7OUqWuuzNQ7RJxWzhzAb59M1nQPBDZscesodtr1zLzF');
+define('NONCE_KEY',        'eBsg0dqOSiKnXnB/50a5Kh7cjvqywFiC0OWz8D2bBBca9XhQsuReiE449eL7GMbnhsCjA7zm5bksjbaR');
+define('AUTH_SALT',        '+klRq7WPtsP4VUmfK+io5ZZdhmHWGVrwBrHXrj4qmQiuDV0ITB4j4nLLz6iIJ7ysdsGt2jDGzFshNMPI');
+define('SECURE_AUTH_SALT', '6OsfRJr3q5jZhct33BM+o7q7uPI6/axUYYf4bUnFeZI4TEma9T0q8lYirS+7ZTx5IQXFjjfeZuwM3Xx3');
+define('LOGGED_IN_SALT',   'kcH+pItErY5E85msg3poiGOmX2CwAW3M6eF1W1+ucUPAv1g5OLk+pGF+tgxVS4rcEXlDDR0pKvbF7In6');
+define('NONCE_SALT',       'NUuW3KKLO7yY6icmWt+dF8jOn00qcO/ZqYmk78N1AhDhTMH3rAuMGo7qIMvbcV1Cl9BIWelF7UFo1eNF');
+
+/**#@-*/
+
+/**
+ * WordPress Database Table prefix.
+ *
+ * You can have multiple installations in one database if you give each
+ * a unique prefix. Only numbers, letters, and underscores please!
+ */
+$table_prefix = 'wp_';
+
+/**
+ * For developers: WordPress debugging mode.
+ *
+ * Change this to true to enable the display of notices during development.
+ * It is strongly recommended that plugin and theme developers use WP_DEBUG
+ * in their development environments.
+ *
+ * For information on other constants that can be used for debugging,
+ * visit the Codex.
+ *
+ * @link https://codex.wordpress.org/Debugging_in_WordPress
+ */
+define('WP_DEBUG', !$onGae);
+
+/* That's all, stop editing! Happy blogging. */
+
+/** Absolute path to the WordPress directory. */
+if (!defined('ABSPATH')) {
+    define('ABSPATH', dirname(__FILE__) . '/');
+}
+
+/** Sets up WordPress vars and included files. */
+require_once(ABSPATH . 'wp-settings.php');
