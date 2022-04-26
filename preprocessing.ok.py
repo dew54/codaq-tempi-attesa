@@ -8,11 +8,6 @@ import math
 
 
 
-
-
-
-
-
 def file_len(fname):
     with open(fname) as f:
         for i, l in enumerate(f):
@@ -79,7 +74,6 @@ def file_read(path, numberOfRows):
     return dataset
 
 
-
 rootFilePath ='./csv/'
 filename = 'estrazioneFarmacia3'
 fullPath = rootFilePath + filename + '.csv'
@@ -109,123 +103,85 @@ rowsThird = 0
 rowsFourth = 0
 
 
-waitTimes = []
-serviceTimes = []
-numbers = []
-arrivalTimes = []
-
-
-
-
-
-DFList = [group[1] for group in dataset.groupby(dataset.index)]
-
-
-
-
-
-
-
-
 
 
 for index, row in dataset.iterrows():
-
-
     try:
-
-        
         waitingTime = dt.datetime.strptime(str(row[5])[2:7], '%H:%M')
-        #serviceTime = dt.datetime.strptime(str(row[6])[2:7], '%H:%M')
-        waitingTime = waitingTime.minute
-        #serviceTime = serviceTime.minute
-        dayOfMonth = row[2]
-        dayOfMonth = str(dayOfMonth)
-        dayOfMonth = dayOfMonth[2:12]
-        dayOfMonth = dt.datetime.strptime(dayOfMonth, '%Y-%m-%d')
-        dayOfMonth = dayOfMonth.day
-        weekOfMonth = math.ceil(dayOfMonth/7)
-
-        if(weekOfMonth) == 1:
-            rowsFirst+=1
-        elif(weekOfMonth) == 2:
-            rowsSecond += 1
-        elif(weekOfMonth) == 3:
-            rowsThird += 1
-        elif(weekOfMonth) == 4:   
-            rowsFourth += 1
-
-
-
-    except Exception as e: 
         
-        print(index)
-    
-    waitTimes.append(int(waitingTime))
-    serviceTimes.append(int(row[6]))
+    except Exception as e:
+        print(e)
+        dataset = dataset.drop(index) 
 
+agg = dataset.groupby(['arrivalDate', 'ggSett'])
+dfs = [x for _, x in agg]   
 
-for index, row in dataset.iterrows():
+for df in dfs:
+    waitTimes = []
+    serviceTimes = []
+    numbers = []
+    arrivalTimes = []
+    weekOfMonth = 0
+    dayOfMonth = 0
+    dayOfWeek = 0
 
-    number = str(row[0])[2:5]
-    arrivalTime = str(row[3])[2:7]
-    numbers.append(number)
-    arrivalTimes.append(arrivalTime)
-    
+    for index, row in df.iterrows():
+        dayOfWeek = row[1]
 
+        try:
 
+            
+            waitingTime = dt.datetime.strptime(str(row[5])[2:7], '%H:%M')
+            #serviceTime = dt.datetime.strptime(str(row[6])[2:7], '%H:%M')
+            waitingTime = waitingTime.minute
+            #serviceTime = serviceTime.minute
+            dayOfMonth = row[2]
+            dayOfMonth = str(dayOfMonth)
+            dayOfMonth = dayOfMonth[2:12]
+            dayOfMonth = dt.datetime.strptime(dayOfMonth, '%Y-%m-%d')
+            dayOfMonth = dayOfMonth.day
+            weekOfMonth = math.ceil(dayOfMonth/7)
 
-firstindex = rowsFirst
-secondIndex = firstindex + 1 + rowsSecond
-thirdIndex = secondIndex + 1 + rowsThird
-fourthIndex = thirdIndex + 1 + rowsFourth
-print(dataset.head())
+            number = str(row[0])[2:5]
+            arrivalTime = str(row[3])[2:7]
+            numbers.append(number)
+            arrivalTimes.append(arrivalTime)
 
-
-dataset.loc[:,'waitTime'] = waitTimes
-dataset.loc[:,'serviceTime'] = serviceTimes
-dataset.loc[:,'ticketCode'] = numbers
-dataset.loc[:,'arrivalTime'] = arrivalTimes
-
-dataset.loc[:,'ticketWaiting'] = 5
-dataset['openCounter'] = dataset['waitTime'] + dataset['serviceTime']
-firstWeekDf = dataset[0:firstindex][['ticketCode', 'arrivalTime', 'waitTime' , 'serviceTime', 'openCounter']]
-secondWeekDf = dataset[firstindex +1 : secondIndex][['ticketCode', 'arrivalTime', 'waitTime' , 'serviceTime', 'openCounter']]
-thirdWeekDf = dataset[secondIndex+1 : thirdIndex][['ticketCode', 'arrivalTime', 'waitTime' , 'serviceTime', 'openCounter']]
-fourthWeekDf = dataset[thirdIndex+1 : fourthIndex][['ticketCode', 'arrivalTime', 'waitTime' , 'serviceTime', 'openCounter']]
-
-
-
-#print(rowsFirst)
-
-
-firstWeekDf.rename(columns={"ticketCode": "Number", "arrivalTime": "Arrival time", "waitTime" : "X1", "serviceTime" : "X2", "openCounter" : "X3"},  inplace = True)
-print(firstWeekDf.head())
-firstWeekDf.to_csv('./csv/WEEK1.csv', index=False)
-secondWeekDf.to_csv('./csv/WEEK2.csv', index=False)
-thirdWeekDf.to_csv('./csv/WEEK3.csv', index=False)
-fourthWeekDf.to_csv('./csv/WEEK4.csv', index=False)
-
-dayOfMonth = dt.datetime.strptime('2022-03-07', '%Y-%m-%d')
-df_temp = dataset.loc[dataset['arrivalDate'] == dayOfMonth]
-
-
-agg = dataset.groupby(['arrivalDate'])
-
-for group in agg:
-    week = group[0]
-    print(week)
-
-
-
-
-
-
-
+            waitTimes.append(int(waitingTime))
+            serviceTimes.append(int(row[6]))
         
 
 
+        except Exception as e: 
+            
+            df.drop(index)
+        
 
+
+    print(df.shape[0])
+    print(len(waitTimes))
+
+    df.loc[:,'waitTime'] = waitTimes
+    df.loc[:,'serviceTime'] = serviceTimes
+    df.loc[:,'ticketCode'] = numbers
+    df.loc[:,'arrivalTime'] = arrivalTimes
+
+    df.loc[:,'ticketWaiting'] = 5
+    df['openCounter'] = df['waitTime'] + df['serviceTime']
+
+    tmp = df[['ticketCode', 'arrivalTime', 'waitTime' , 'serviceTime', 'openCounter']]
+
+    df = tmp
+
+    df.rename(columns={"ticketCode": "Number", "arrivalTime": "Arrival time", "waitTime" : "X1", "serviceTime" : "X2", "openCounter" : "X3"},  inplace = True)
+
+
+    dayOfWeek = int(dayOfWeek)
+    path = "./csv/data/"
+    name = "WEEK" + str(weekOfMonth) + "DAY" + str(dayOfWeek)
+    extension = ".csv"
+    fileName = path + name + extension
+    df.to_csv(fileName, index=False)
 
 
 
